@@ -10,6 +10,8 @@
 // @require      https://cdn.jsdelivr.net/npm/chart.js
 // ==/UserScript==
 
+// This isn't my code...this is the code from CF Analytics's extension. I just copied it and slightly modified it to work as a Tampermonkey script.
+// so that i can use it on my phone on firefox, as the extension isn't available on firefox-android, while tampermonkey is.
 (function () {
   "use strict";
 
