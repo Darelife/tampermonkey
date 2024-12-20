@@ -5,12 +5,11 @@
 // @description  Adds charts and unsolved problem list on Codeforces profile page
 // @author       CF Analytics
 // @match        https://codeforces.com/profile/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=codeforces.com
 // @grant        none
 // @require      https://cdn.jsdelivr.net/npm/chart.js
 // ==/UserScript==
 
-// This isn't my code...this is the code from CF Analytics's extension. I just copied it and slightly modified it to work as a Tampermonkey script.
-// so that i can use it on my phone on firefox, as the extension isn't available on firefox-android, while tampermonkey is.
 (function () {
   "use strict";
 
@@ -33,7 +32,6 @@
     yield* [...tags.entries()].sort((a, b) => b[1] - a[1]);
   };
 
-  // Material Design 400 light
   const colorArray = [
     "#ff867c",
     "#ff77a9",
@@ -53,14 +51,22 @@
     "#ffa270",
   ];
 
-  // Insert custom HTML elements to hold the charts and data
   document.querySelector("#pageContent").insertAdjacentHTML(
     "beforeend",
     `
-        <div id="customContent">
+        <div id="customContent" style="display: flex; flex-direction: column; gap: 20px;">
             <div id="charts">
                 <canvas id="problemRatingChart"></canvas>
+            </div>
+            <br />
+            <div id="charts">
                 <canvas id="tagChart"></canvas>
+            </div>
+            <br />
+            <div id="tagDetails">
+                <h3>Tags Solved</h3>
+                <br />
+                <ul id="tag_list" style="list-style: none; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;"></ul>
             </div>
             <div id="unsolvedProblems">
                 <h3>Unsolved Problems</h3>
@@ -156,6 +162,21 @@
     for (const [key, val] of tags) {
       tagChartLabel.push(key);
       tagChartData.push(val);
+      document.querySelector("#tag_list").insertAdjacentHTML(
+        "beforeend",
+        `
+                <li style="display: flex; align-items: center;">
+                    <svg width="12" height="12" style="margin-right: 8px;">
+                        <rect width="12" height="12" style="fill:${
+                          colorArray[
+                            tagChartLabel.indexOf(key) % colorArray.length
+                          ]
+                        };stroke-width:1;stroke:rgb(0,0,0)" />
+                    </svg>
+                    ${key}: ${val}
+                </li>
+            `
+      );
     }
   }
 
@@ -217,22 +238,6 @@
           legend: { display: false, position: "right" },
         },
       },
-    });
-
-    tagChartLabel.forEach((label, i) => {
-      document.querySelector("#legend_unordered_list").insertAdjacentHTML(
-        "beforeend",
-        `
-                <li>
-                    <svg width="12" height="12">
-                        <rect width="12" height="12" style="fill:${
-                          colorArray[i % colorArray.length]
-                        };stroke-width:1;stroke:rgb(0,0,0)" />
-                    </svg>
-                    ${label} : ${tagChartData[i]}
-                </li>
-            `
-      );
     });
   }
 
