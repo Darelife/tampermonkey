@@ -159,12 +159,12 @@
     });
   }
 
-  window.addEventListener("load", () => {
-    addParticipantInputBox();
+  // window.addEventListener("load", () => {
+  addParticipantInputBox();
 
-    const loggedInUser = getDarelife();
-    if (loggedInUser) {
-      highlightParticipatedContests(loggedInUser);
-    }
-  });
+  const loggedInUser = getDarelife();
+  if (loggedInUser) {
+    highlightParticipatedContests(loggedInUser);
+  }
+  // });
 })();
