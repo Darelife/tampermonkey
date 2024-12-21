@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "CF Assistant",
+  "description": "Adds useful features to the CF website, such as adding ratings to the submissions page, and ability to check the contests you and any particular person has participated in the contests page itself, for comparison.",
+  "version": "0.1",
+  "permissions": [
+    "declarativeNetRequest",
+    "activeTab",
+    "webRequest",
+    "webRequestBlocking",
+    "storage"
+  ],
+  "content_scripts": [
+    {
+      "matches": ["https://codeforces.com/submissions/*", "https://codeforces.com/contests"],
+      "js": ["cfHelper.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "48": "icons/icon-48.png",
+      "96": "icons/icon-96.png"
+    }
+  }
+}

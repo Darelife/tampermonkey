@@ -1,0 +1,15 @@
+#participantInput {
+  width: 100%;
+  margin-bottom: 8px;
+  padding: 4px;
+}
+
+#checkParticipation {
+  width: 100%;
+  padding: 8px;
+  cursor: pointer;
+  background-color: #0078d4;
+  color: white;
+  border: none;
+  border-radius: 4px;
+}
