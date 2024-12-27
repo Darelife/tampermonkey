@@ -1,10 +1,16 @@
 {
-  "manifest_version": 2,
+  "manifest_version": 3,
   "name": "Codeforces Helper",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Enhance Codeforces with an easy contest participant checker and user submission rating viewer.",
   "icons": {
     "48": "icons/icon.png"
+  },
+  "permissions": ["storage", "activeTab"],
+  "host_permissions": ["https://codeforces.com/*"],
+  "action": {
+    "default_popup": "popup/popup.html",
+    "default_icon": "icons/icon.png"
   },
   "content_scripts": [
     {
@@ -20,7 +26,6 @@
       "js": ["content_scripts/cfHideTagsExceptRating.js"]
     }
   ],
-  "permissions": ["https://codeforces.com/*"],
   "browser_specific_settings": {
     "gecko": {
       "id": "codeforces-helper@yourdomain.com",

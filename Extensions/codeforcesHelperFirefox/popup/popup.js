@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const submissionToggle = document.getElementById("toggle-submissions");
   const participantToggle = document.getElementById("toggle-participants");
 
-  chrome.storage.sync.get(
+  browser.storage.sync.get(
     ["tagsEnabled", "submissionsEnabled", "participantsEnabled"],
     (settings) => {
       tagToggle.checked = settings.tagsEnabled ?? true;
@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
   );
 
   const savePreferences = () => {
-    chrome.storage.sync.set(
+    browser.storage.sync.set(
       {
         tagsEnabled: tagToggle.checked,
         submissionsEnabled: submissionToggle.checked,
