@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Codeforces Helper Settings</title>
+    <style>
+      /* General styling for a dark theme */
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 10px;
+        width: 250px;
+        background-color: #1e1e1e;
+        color: #ffffff;
+      }
+
+      h3 {
+        text-align: center;
+        color: #ffffff;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+      }
+
+      .script-option {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 15px;
+        padding: 8px;
+        border: 1px solid #3a3a3a;
+        border-radius: 5px;
+        background-color: #2c2c2c;
+      }
+
+      label {
+        font-size: 0.9rem;
+        color: #ffffff;
+      }
+
+      /* Custom toggle switch */
+      .toggle {
+        position: relative;
+        display: inline-block;
+        width: 40px;
+        height: 20px;
+      }
+
+      .toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #555;
+        transition: 0.1s;
+        border-radius: 20px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 14px;
+        width: 14px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.1s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: #0078d4;
+      }
+
+      input:checked + .slider:before {
+        transform: translateX(18px);
+      }
+
+      button {
+        width: 100%;
+        padding: 8px;
+        background-color: #0078d4;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 0.9rem;
+      }
+
+      button:hover {
+        background-color: #005bb5;
+      }
+    </style>
+  </head>
+  <body>
+    <h3>Codeforces Helper</h3>
+    <div class="script-option">
+      <label for="toggle-tags">Hide Tags Except Rating</label>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-tags" />
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="script-option">
+      <label for="toggle-submissions">Show Submission Ratings</label>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-submissions" />
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="script-option">
+      <label for="toggle-participants">Contest Participant Checker</label>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-participants" />
+        <span class="slider"></span>
+      </label>
+    </div>
+    <script src="popup.js"></script>
+  </body>
+</html>

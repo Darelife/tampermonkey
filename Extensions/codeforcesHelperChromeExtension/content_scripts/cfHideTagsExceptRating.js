@@ -12,13 +12,32 @@
 (function () {
   "use strict";
 
-  const tags = document.querySelectorAll(".tag-box");
+  chrome.storage.sync.get("tagsEnabled", (settings) => {
+    if (settings.tagsEnabled) {
+      const tags = document.querySelectorAll(".tag-box");
 
-  tags.forEach((tag) => {
-    if (!/^\*\d+$/.test(tag.textContent.trim())) {
-      const parent = tag.closest(".roundbox");
-      if (parent) {
-        parent.style.display = "none";
+      tags.forEach((tag) => {
+        if (!/^\*\d+$/.test(tag.textContent.trim())) {
+          const parent = tag.closest(".roundbox");
+          if (parent) {
+            parent.style.display = "none";
+          }
+        }
+      });
+      const tagsContainer = tags[0].closest(
+        ".roundbox, .problem-statement"
+      ).parentNode;
+      if (tagsContainer) {
+        const tagsHidden = document.createElement("div");
+        tagsHidden.textContent = "Tags Hidden";
+        tagsHidden.style.color = "red";
+        tagsHidden.style.fontWeight = "bold";
+        tagsHidden.style.fontSize = "large";
+        tagsHidden.style.textAlign = "center";
+        tagsHidden.style.marginTop = "10px";
+        tagsHidden.style.marginBottom = "15px";
+
+        tagsContainer.prepend(tagsHidden);
       }
     }
   });
