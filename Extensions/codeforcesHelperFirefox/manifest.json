@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Codeforces Helper",
-  "version": "1.1",
+  "version": "2.0",
   "description": "Enhance Codeforces with an easy contest participant checker and user submission rating viewer.",
   "icons": {
     "48": "icons/icon.png"
