@@ -16,7 +16,10 @@
 
   tags.forEach((tag) => {
     if (!/^\*\d+$/.test(tag.textContent.trim())) {
-      tag.style.display = "none";
+      const parent = tag.closest(".roundbox");
+      if (parent) {
+        parent.style.display = "none";
+      }
     }
   });
 })();
