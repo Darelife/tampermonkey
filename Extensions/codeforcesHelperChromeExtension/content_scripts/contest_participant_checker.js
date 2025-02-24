@@ -3,6 +3,7 @@
 
   chrome.storage.sync.get("participantsEnabled", (settings) => {
     if (settings.participantsEnabled) {
+      console.log("hi");
       function getDarelife() {
         const profileLink = document.querySelector('a[href^="/profile/"]');
         if (profileLink) {

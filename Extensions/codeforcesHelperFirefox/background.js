@@ -1,2 +1,12 @@
-console.log("Codeforces Helper background script is running.");
-console.log("hmmmm");
+browser.runtime.onInstalled.addListener(() => {
+  browser.storage.sync.set(
+    {
+      participantsEnabled: true,
+      tagsEnabled: true,
+      submissionsEnabled: true,
+    },
+    () => {
+      console.log("Default settings have been set.");
+    }
+  );
+});

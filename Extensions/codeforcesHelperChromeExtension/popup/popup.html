@@ -10,9 +10,11 @@
         font-family: Arial, sans-serif;
         margin: 0;
         padding: 10px;
-        width: 250px;
+        min-width: 300px; /* Make the popup wider */
+        width: auto; /* Allow content to expand */
         background-color: #1e1e1e;
         color: #ffffff;
+        box-sizing: border-box;
       }
 
       h3 {
@@ -120,6 +122,13 @@
       <label for="toggle-participants">Contest Participant Checker</label>
       <label class="toggle">
         <input type="checkbox" id="toggle-participants" />
+        <span class="slider"></span>
+      </label>
+    </div>
+    <div class="script-option">
+      <label for="toggle-savequestions">Save Questions</label>
+      <label class="toggle">
+        <input type="checkbox" id="toggle-savequestions" />
         <span class="slider"></span>
       </label>
     </div>
