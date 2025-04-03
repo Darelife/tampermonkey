@@ -468,30 +468,39 @@
       }
 
       function addSaveButton() {
-        // Fix problem ID extraction
         const urlParts = window.location.pathname.split("/");
         let problemId;
 
         if (urlParts.includes("contest")) {
-          // Format: /contest/2063/problem/F1
           const contestId = urlParts[urlParts.indexOf("contest") + 1];
           const problemIndex = urlParts[urlParts.length - 1];
           problemId = `${contestId}/${problemIndex}`;
         } else {
-          // Format: /problemset/problem/2063/F1
           problemId = urlParts.slice(-2).join("/");
         }
 
-        const container = document.querySelector(".title");
+        const container = document.querySelector(
+          ".roundbox.sidebox.borderTopRound"
+        );
         if (!container) return;
+
+        const table = container.querySelector(".rtable");
+        if (!table) return;
 
         const button = document.createElement("button");
         button.innerText = "Save to List";
         button.className = "cf-btn cf-btn-primary";
+
         button.style.marginLeft = "10px";
 
+        const newRow = document.createElement("tr");
+        const newCell = document.createElement("td");
+        newCell.className = "left";
+        newCell.setAttribute("colspan", "2");
+        newCell.appendChild(button);
+        newRow.appendChild(newCell);
+        table.appendChild(newRow);
         button.addEventListener("click", () => createModal(problemId));
-        container.appendChild(button);
       }
 
       function displaySavedProblems() {
@@ -632,7 +641,6 @@
         });
       }
 
-      // Initialize
       addStyles();
       if (
         currentUrl.includes("/problemset/problem/") ||
