@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Codeforces Hide Tags Except Rating (With Reveal for Solved Problems)
+// @name         Codeforces Hide Tags Except Rating (Optimized & Toggleable)
 // @namespace    http://tampermonkey.net/
-// @version      1.2
-// @description  Hide all problem tags on Codeforces except the rating tags, with an option to reveal for solved problems.
+// @version      1.7
+// @description  Hide all problem tags on Codeforces except rating tags, with an option to toggle visibility for solved problems.
 // @author       Prakhar Bhandari
 // @match        https://codeforces.com/problemset/problem/*
 // @match        https://codeforces.com/contest/*/problem/*
@@ -13,70 +13,110 @@
 (function () {
   "use strict";
 
-  browser.storage.sync.get("tagsEnabled", (settings) => {
-    if (settings.tagsEnabled) {
-      console.log("Script running: Checking if the question is solved...");
-      const isSolved = [...document.querySelectorAll("table")].some((table) =>
-        table.textContent.includes("Accepted")
+  browser.storage.sync.get("tagsEnabled", ({ tagsEnabled }) => {
+    if (!tagsEnabled) return;
+
+    function getLoggedInUsername() {
+      return (
+        document.querySelector('a[href^="/profile/"]')?.textContent.trim() ||
+        null
       );
+    }
 
-      console.log("This question is solved:", isSolved);
+    function hideTags(isSolved) {
+      const tags = [...document.querySelectorAll(".tag-box")].filter(
+        (tag) => !/^\*\d+$/.test(tag.textContent.trim())
+      );
+      if (tags.length === 0) return;
 
-      const tags = document.querySelectorAll(".tag-box");
-      if (tags.length === 0) {
-        console.log("No tags found, exiting...");
+      const parentSet = new Set(tags.map((tag) => tag.parentElement));
+      parentSet.forEach((parent) => (parent.style.display = "none"));
+
+      const tagsContainer = tags[0]?.closest(
+        ".roundbox, .problem-statement"
+      )?.parentElement;
+      if (!tagsContainer) return;
+
+      const messageBox = Object.assign(document.createElement("div"), {
+        textContent: "Tags Hidden",
+        style:
+          "color: red; font-weight: bold; font-size: large; text-align: center; margin: 10px auto; padding: 8px 12px; border: 2px solid red; border-radius: 5px; display: inline-block; background: none;",
+      });
+      tagsContainer.appendChild(messageBox);
+
+      if (isSolved) {
+        const toggleButton = Object.assign(document.createElement("button"), {
+          textContent: "Show Tags",
+          style:
+            "color: red; font-weight: bold; font-size: large; text-align: center; margin: 10px auto; padding: 8px 12px; border: 2px solid red; border-radius: 5px; background: none; cursor: pointer; display: inline-block;",
+        });
+
+        let isVisible = false;
+
+        toggleButton.onclick = () => {
+          isVisible = !isVisible;
+          parentSet.forEach(
+            (parent) => (parent.style.display = isVisible ? "block" : "none")
+          );
+          toggleButton.textContent = isVisible ? "Hide Tags" : "Show Tags";
+        };
+
+        messageBox.replaceWith(toggleButton);
+      }
+    }
+
+    function checkIfSolved(contestId, indexId, userId) {
+      fetch(
+        `https://codeforces.com/api/contest.status?contestId=${contestId}&handle=${userId}`
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.status === "OK") {
+            const isSolved = data.result.some(
+              (submission) =>
+                submission.problem.contestId == contestId &&
+                submission.problem.index === indexId &&
+                submission.verdict === "OK"
+            );
+            hideTags(isSolved);
+          } else {
+            console.error("Error: Invalid response from API");
+          }
+        })
+        .catch((error) => console.error("Error fetching data:", error));
+    }
+
+    function main() {
+      const userId = getLoggedInUsername();
+      const url = window.location.href;
+      if (
+        !userId ||
+        (!url.includes("/problemset/problem/") && !url.includes("/contest/"))
+      ) {
         return;
       }
 
-      const parentSet = new Set();
-      tags.forEach((tag) => {
-        if (!/^\*\d+$/.test(tag.textContent.trim())) {
-          parentSet.add(tag.parentElement);
+      let contestId, indexId;
+
+      if (url.includes("/problemset/problem/")) {
+        const match = url.match(/\/problemset\/problem\/(\d+)\/(\w+)/);
+        if (match) {
+          contestId = match[1];
+          indexId = match[2];
         }
-      });
-
-      parentSet.forEach((parent) => {
-        if (parent) parent.style.display = "none";
-      });
-
-      const tagsContainer = tags[0].closest(
-        ".roundbox, .problem-statement"
-      ).parentElement;
-      if (tagsContainer) {
-        const tagsHidden = document.createElement("div");
-        tagsHidden.textContent = "Tags Hidden";
-        tagsHidden.style.color = "red";
-        tagsHidden.style.fontWeight = "bold";
-        tagsHidden.style.fontSize = "large";
-        tagsHidden.style.textAlign = "center";
-        tagsHidden.style.marginTop = "10px";
-        tagsHidden.style.marginBottom = "15px";
-
-        if (!isSolved) tagsContainer.prepend(tagsHidden);
-        else {
-          const showTagsButton = document.createElement("button");
-          showTagsButton.textContent = "Show Tags";
-          showTagsButton.style.marginLeft = "10px";
-          showTagsButton.style.cursor = "pointer";
-          showTagsButton.style.padding = "6px 10px";
-          showTagsButton.style.border = "1px solid #888";
-          showTagsButton.style.background = "#f5f5f5";
-          showTagsButton.style.borderRadius = "5px";
-          showTagsButton.style.fontSize = "14px";
-          showTagsButton.style.display = "block";
-          showTagsButton.style.margin = "10px auto";
-
-          showTagsButton.addEventListener("click", () => {
-            console.log("Show Tags button clicked");
-            parentSet.forEach((parent) => {
-              if (parent) parent.style.display = "block";
-            });
-            showTagsButton.remove();
-          });
-
-          tagsContainer.appendChild(showTagsButton);
+      } else if (url.includes("/contest/")) {
+        const match = url.match(/\/contest\/(\d+)\/problem\/(\w+)/);
+        if (match) {
+          contestId = match[1];
+          indexId = match[2];
         }
       }
+
+      if (contestId && indexId) {
+        checkIfSolved(contestId, indexId, userId);
+      }
     }
+
+    main();
   });
 })();

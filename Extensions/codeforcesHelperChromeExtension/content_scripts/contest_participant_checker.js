@@ -1,153 +1,126 @@
+// ==UserScript==
+// @name         Codeforces Highlight Participated Contests (Optimized)
+// @namespace    http://tampermonkey.net/
+// @version      1.2
+// @description  Highlights contests participated in by a user on Codeforces (Optimized for speed)
+// @author       Prakhar Bhandari
+// @match        https://codeforces.com/contests
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=codeforces.com
+// @grant        none
+// ==/UserScript==
+
 (function () {
   "use strict";
 
-  chrome.storage.sync.get("participantsEnabled", (settings) => {
-    if (settings.participantsEnabled) {
-      console.log("hi");
-      function getDarelife() {
-        const profileLink = document.querySelector('a[href^="/profile/"]');
-        if (profileLink) {
-          return profileLink.textContent.trim();
-        }
-        console.error("Where's bro??");
-        return null;
-      }
+  chrome.storage.sync.get("participantsEnabled", ({ participantsEnabled }) => {
+    if (!participantsEnabled) return;
 
-      async function broParticipated(user) {
-        if (!user) {
-          console.error("User not found.");
-          return [];
-        }
+    console.log("Script Running: Checking Participation");
+
+    async function fetchParticipationData(user) {
+      if (!user) return new Set();
+      try {
         const response = await fetch(
           `https://codeforces.com/api/user.status?handle=${user}`
         );
-        if (!response.ok) {
-          console.error("Data not found.");
-          return [];
-        }
+        if (!response.ok) throw new Error("API Error");
         const data = await response.json();
-        if (data.status !== "OK") {
-          console.error("API Error.");
-          return [];
-        }
-        const contestsParti = new Set();
-        data.result.forEach((submission) => {
-          if (submission.author.participantType === "CONTESTANT") {
-            contestsParti.add(submission.contestId);
-          }
-        });
-        return contestsParti;
+        return data.status === "OK"
+          ? new Set(
+              data.result
+                .filter((s) => s.author.participantType === "CONTESTANT")
+                .map((s) => s.contestId)
+            )
+          : new Set();
+      } catch (error) {
+        console.error("Error fetching data:", error);
+        return new Set();
       }
+    }
 
-      async function highlightParticipatedContests(username) {
-        const contestsParti = await broParticipated(username);
-        if (contestsParti.size === 0) {
-          console.warn("No contests found for the user.");
-          return;
+    function highlightRows(contestsParti) {
+      if (!contestsParti.size) return;
+
+      document.querySelectorAll("tr[data-contestid]").forEach((row) => {
+        const contestId = Number(row.getAttribute("data-contestid"));
+        if (contestsParti.has(contestId)) {
+          row
+            .querySelector(".right")
+            ?.style.setProperty("background-color", "#70cf85", "important");
+          row
+            .querySelector(".right a")
+            ?.style.setProperty("color", "white", "important");
         }
+      });
+    }
 
-        const contestRows = document.querySelectorAll("tr[data-contestid]");
-        contestRows.forEach((row) => {
-          const contestId = parseInt(row.getAttribute("data-contestid"), 10);
-          if (contestsParti.has(contestId)) {
-            const participantLink = row.querySelector(".right");
-            // ik using !important sucks....but i was kinda forced to use it here
-            participantLink.style.cssText = `
-            font-size: 0.8em;
-            background-color: #70cf85 !important;
-          `;
-            const link = participantLink.querySelector(
-              ".contestParticipantCountLinkMargin"
-            );
-            if (link) {
-              link.style.cssText = `
-              font-size: 0.8em;
-              color: white !important;
-            `;
-            }
-          }
-        });
-      }
+    function highlightLeftColumn(contestsParti) {
+      if (!contestsParti.size) return;
 
-      function clearHighlights() {
-        document.querySelectorAll("tr[data-contestid]").forEach((row) => {
-          row.querySelector(".left")?.style.removeProperty("background-color");
-          row.querySelector(".left")?.style.removeProperty("color");
-        });
-      }
-
-      async function highlightLeft(username) {
-        const contestsParti = await broParticipated(username);
-        if (contestsParti.size === 0) {
-          console.warn("No contests found.");
-          return;
+      document.querySelectorAll("tr[data-contestid]").forEach((row) => {
+        const contestId = Number(row.getAttribute("data-contestid"));
+        if (contestsParti.has(contestId)) {
+          row
+            .querySelector(".left")
+            ?.style.setProperty("background-color", "yellow", "important");
+          row
+            .querySelector(".left")
+            ?.style.setProperty("color", "black", "important");
         }
+      });
+    }
 
-        document.querySelectorAll("tr[data-contestid]").forEach((row) => {
-          const contestId = parseInt(row.getAttribute("data-contestid"), 10);
-          if (contestsParti.has(contestId)) {
-            row
-              .querySelector(".left")
-              .style.setProperty("background-color", "yellow", "important");
-            row
-              .querySelector(".left")
-              .style.setProperty("color", "black", "important");
-          }
-        });
-      }
+    function getLoggedInUsername() {
+      return (
+        document.querySelector('a[href^="/profile/"]')?.textContent.trim() ||
+        null
+      );
+    }
 
-      function addParticipantInputBox() {
-        const sidebar = document.getElementById("sidebar");
-        if (!sidebar) {
-          console.error("Sidebar not found.");
-          return;
-        }
+    function addParticipantInputBox() {
+      const sidebar = document.getElementById("sidebar");
+      if (!sidebar || document.getElementById("participantInput")) return;
 
-        const participantBox = document.createElement("div");
-        participantBox.className =
-          "roundbox sidebox virtual-contests borderTopRound";
-        participantBox.innerHTML = `
+      const participantBox = document.createElement("div");
+      participantBox.className =
+        "roundbox sidebox virtual-contests borderTopRound";
+      participantBox.innerHTML = `
         <div class="caption titled">→ Contest Participant</div>
         <div style="padding: 0.5em;">
           <label for="participantInput">Username:</label>
-          <input
-            type="text"
-            id="participantInput"
-            style="width: 100%; box-sizing: border-box; margin-bottom: 0.5em;"
-            placeholder="Enter username"
-          />
+          <input type="text" id="participantInput" style="width: 100%; margin-bottom: 0.5em;" placeholder="Enter username"/>
           <button id="checkParticipation" style="width: 100%; padding: 0.5em; cursor: pointer;">Check</button>
         </div>
       `;
-        sidebar.appendChild(participantBox);
 
-        const participantInput = document.getElementById("participantInput");
-        const checkButton = document.getElementById("checkParticipation");
+      sidebar.appendChild(participantBox);
+      const input = document.getElementById("participantInput");
+      const button = document.getElementById("checkParticipation");
 
-        function handleSearch() {
-          const username = participantInput.value.trim();
-          if (username) {
-            clearHighlights();
-            highlightLeft(username);
-          } else {
-            alert("Please enter a username.");
-          }
-        }
+      async function handleSearch() {
+        const username = input.value.trim();
+        if (!username) return alert("Please enter a username.");
 
-        checkButton.addEventListener("click", handleSearch);
-
-        participantInput.addEventListener("keypress", (e) => {
-          if (e.key === "Enter") {
-            handleSearch();
-          }
-        });
+        const contestsParti = await fetchParticipationData(username);
+        highlightLeftColumn(contestsParti);
       }
 
+      button.addEventListener("click", handleSearch);
+      input.addEventListener(
+        "keypress",
+        (e) => e.key === "Enter" && handleSearch()
+      );
+    }
+
+    async function main() {
       addParticipantInputBox();
-      const loggedInUser = getDarelife();
-      if (loggedInUser) {
-        highlightParticipatedContests(loggedInUser);
+      const username = getLoggedInUsername();
+      if (username) {
+        const contestsParti = await fetchParticipationData(username);
+        highlightRows(contestsParti);
       }
     }
+
+    main();
   });
 })();
