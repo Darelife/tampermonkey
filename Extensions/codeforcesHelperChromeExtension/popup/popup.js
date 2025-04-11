@@ -3,6 +3,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const submissionToggle = document.getElementById("toggle-submissions");
   const participantToggle = document.getElementById("toggle-participants");
   const saveQuestionsToggle = document.getElementById("toggle-savequestions");
+  const multiUserRatingGraphToggle = document.getElementById(
+    "toggle-multiuserratinggraph"
+  );
 
   chrome.storage.sync.get(
     [
@@ -10,12 +13,15 @@ document.addEventListener("DOMContentLoaded", () => {
       "submissionsEnabled",
       "participantsEnabled",
       "saveQuestionsEnabled",
+      "multiUserRatingGraphEnabled",
     ],
     (settings) => {
       tagToggle.checked = settings.tagsEnabled ?? true;
       submissionToggle.checked = settings.submissionsEnabled ?? true;
       participantToggle.checked = settings.participantsEnabled ?? true;
       saveQuestionsToggle.checked = settings.saveQuestionsEnabled ?? true;
+      multiUserRatingGraphToggle.checked =
+        settings.multiUserRatingGraphEnabled ?? true;
     }
   );
 
@@ -26,6 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submissionsEnabled: submissionToggle.checked,
         participantsEnabled: participantToggle.checked,
         saveQuestionsEnabled: saveQuestionsToggle.checked,
+        multiUserRatingGraphEnabled: multiUserRatingGraphToggle.checked,
       },
       () => {
         console.log("Settings saved:", {
@@ -33,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
           submissionsEnabled: submissionToggle.checked,
           participantsEnabled: participantToggle.checked,
           saveQuestionsEnabled: saveQuestionsToggle.checked,
+          multiUserRatingGraphEnabled: multiUserRatingGraphToggle.checked,
         });
       }
     );
@@ -42,4 +50,5 @@ document.addEventListener("DOMContentLoaded", () => {
   submissionToggle.addEventListener("change", savePreferences);
   participantToggle.addEventListener("change", savePreferences);
   saveQuestionsToggle.addEventListener("change", savePreferences);
+  multiUserRatingGraphToggle.addEventListener("change", savePreferences);
 });
