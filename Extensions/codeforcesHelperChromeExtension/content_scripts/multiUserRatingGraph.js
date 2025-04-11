@@ -684,25 +684,73 @@
         const { point, datasetIndex } = closest;
         const dataset = this.datasets[datasetIndex];
 
-        // Position tooltip
-        let tooltipX = mouseX + 15;
-        let tooltipY = mouseY - 15;
+        // Completely redesigned tooltip positioning to ensure it never overlaps cursor
+        // and always has enough space
 
-        // Keep tooltip within viewport bounds
-        const tooltipWidth = 300; // Increased width for more data
-        const tooltipHeight = 250; // Increased height for more data
+        // Get the canvas position relative to the viewport
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const viewportX = canvasRect.left + mouseX;
+        const viewportY = canvasRect.top + mouseY;
 
-        if (tooltipX + tooltipWidth > rect.width) {
-          tooltipX = mouseX - tooltipWidth - 15;
+        // Get viewport and document dimensions
+        const viewportWidth = window.innerWidth;
+        const documentHeight = document.documentElement.scrollHeight;
+
+        // Tooltip dimensions
+        const tooltipWidth = 300;
+        const tooltipHeight = 250;
+        const padding = 25; // Space between cursor and tooltip
+
+        // Calculate available space in each direction
+        const spaceRight = viewportWidth - viewportX - padding;
+        const spaceLeft = viewportX - padding;
+        const spaceBelow = documentHeight - viewportY - padding;
+        const spaceAbove = viewportY - padding;
+
+        // Determine best horizontal position
+        let tooltipX;
+        if (spaceRight >= tooltipWidth) {
+          // Enough space to the right
+          tooltipX = mouseX + padding;
+        } else if (spaceLeft >= tooltipWidth) {
+          // Enough space to the left
+          tooltipX = mouseX - tooltipWidth - padding;
+        } else {
+          // Not enough space on either side, center it and make sure it doesn't go off-screen
+          tooltipX = Math.max(
+            10,
+            Math.min(rect.width - tooltipWidth - 10, mouseX - tooltipWidth / 2)
+          );
         }
 
-        if (tooltipY < 0) {
-          tooltipY = 15;
+        // Determine best vertical position
+        let tooltipY;
+        if (spaceBelow >= tooltipHeight) {
+          // Enough space below
+          tooltipY = mouseY + padding;
+        } else if (spaceAbove >= tooltipHeight) {
+          // Enough space above
+          tooltipY = mouseY - tooltipHeight - padding;
+        } else {
+          // Not enough space above or below, position it to minimize overflow
+          tooltipY = Math.max(
+            10,
+            Math.min(
+              rect.height - tooltipHeight - 10,
+              mouseY - tooltipHeight / 2
+            )
+          );
         }
 
-        if (tooltipY + tooltipHeight > rect.height) {
-          tooltipY = rect.height - tooltipHeight - 10;
-        }
+        // Final adjustment to ensure tooltip is fully visible within the canvas
+        tooltipX = Math.max(
+          10,
+          Math.min(rect.width - tooltipWidth - 10, tooltipX)
+        );
+        tooltipY = Math.max(
+          10,
+          Math.min(rect.height - tooltipHeight - 10, tooltipY)
+        );
 
         // Format tooltip content
         const ratingChange = point.ratingChange;
